@@ -1,7 +1,7 @@
 "use strict";
 
 require([
-  "libs/text!shaders/example.vert",
+  "libs/text!shaders/terrain.vert",
   "libs/text!shaders/example.frag",
   "libs/text!shaders/simplex-noise.glsl",
   "libs/orbit-controls"
@@ -27,8 +27,8 @@ function (exampleVert, exampleFrag, simplexNoise) {
   });
 
   function init() {
-    camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 999999);
-    camera.position.set(0, 0, 100);
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 99999);
+    camera.position.set(0, 0, 2048);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     scene = new THREE.Scene();
@@ -97,7 +97,7 @@ function (exampleVert, exampleFrag, simplexNoise) {
 
     var tileMaterial = new THREE.ShaderMaterial({
       uniforms: tileUniforms,
-      vertexShader: exampleVert,
+      vertexShader: simplexNoise + exampleVert,
       fragmentShader: exampleFrag
     });
 

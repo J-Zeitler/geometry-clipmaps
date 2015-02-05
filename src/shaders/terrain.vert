@@ -12,10 +12,6 @@ varying vec2 uVu;
 
 
 void main() {
-  // float noise  = 0.5*snoise(vec4(position*2.0, dt*0.0003));
-  //       noise += 0.25*snoise(vec4(position*4.0, dt*0.0003));
-  //       noise += 0.125*snoise(vec4(position*8.0, dt*0.0003));
-  //       noise += 0.0625*snoise(vec4(position*16.0, dt*0.0003));
 
   // Position tiles in x,y-plane
   pos = position*scale;
@@ -23,6 +19,11 @@ void main() {
 
   // Calculate uvs
   uVu = (pos.xy/terrainDims + 1.0)*0.5;
+
+  // float noise  = 0.5*snoise(vec4(pos*2.0, 0.0003));
+  //       noise += 0.25*snoise(vec4(pos*4.0, 0.0003));
+  //       noise += 0.125*snoise(vec4(pos*8.0, 0.0003));
+  //       noise += 0.0625*snoise(vec4(pos*16.0, 0.0003));
 
   pos.z += texture2D(heightmap, uVu).x*terrainDims.x*0.1;
 
