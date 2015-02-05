@@ -21,18 +21,15 @@ void main() {
   float gridSpacing = scale/tileRes;
   pos = floor(pos/gridSpacing)*gridSpacing;
 
-
   // Morph verts
   vec2 pShifted = position.xy - vec2(0.5, 0.5);
   vec2 pMorphed = pShifted*morph*2.0;
 
   float xMorph = step(0.0, pMorphed.x)*pMorphed.x;
   float yMorph = step(0.0, pMorphed.y)*pMorphed.y;
-  // float morphFactor = (xMorph + yMorph)/2.0;
 
   gridSpacing = 2.0*gridSpacing;
   vec3 posNext = floor(pos/gridSpacing)*gridSpacing;
-
   pos = mix(pos, posNext, max(xMorph, yMorph));
 
   // float noise  = 0.5*snoise(vec4(pos*2.0, 0.0003));

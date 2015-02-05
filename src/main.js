@@ -16,7 +16,7 @@ function (exampleVert, exampleFrag, simplexNoise) {
 
   // Global Consts
   var TERRAIN_WIDTH = 1024, TERRAIN_HEIGHT = 1024;
-  var TILE_RES = 16;
+  var TILE_RES = 32;
   var LOD_LEVELS = 6;
 
   var MORPH = {
@@ -113,8 +113,7 @@ function (exampleVert, exampleFrag, simplexNoise) {
       midPos: {type: "v2", value: midPos},
       terrainDims: {type: "v2", value: new THREE.Vector2(TERRAIN_WIDTH, TERRAIN_HEIGHT)},
       tileRes: {type: "f", value: TILE_RES},
-      morph: {type: "v2", value: morph},
-      morphFactor: {type: "f", value: 0.5}
+      morph: {type: "v2", value: morph}
     };
 
     var tileMaterial = new THREE.ShaderMaterial({
@@ -123,8 +122,8 @@ function (exampleVert, exampleFrag, simplexNoise) {
       fragmentShader: exampleFrag
     });
 
-    tileMaterial.wireframe = true;
-    tileMaterial.wireframeLinewidth = 1.0;
+    // tileMaterial.wireframe = true;
+    // tileMaterial.wireframeLinewidth = 1.0;
 
     var tile = new THREE.Mesh(
       tileGeometry,
