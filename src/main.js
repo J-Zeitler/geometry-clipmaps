@@ -122,8 +122,8 @@ function (exampleVert, exampleFrag, simplexNoise) {
       fragmentShader: exampleFrag
     });
 
-    // tileMaterial.wireframe = true;
-    // tileMaterial.wireframeLinewidth = 1.0;
+    tileMaterial.wireframe = true;
+    tileMaterial.wireframeLinewidth = 1.0;
 
     var tile = new THREE.Mesh(
       tileGeometry,
