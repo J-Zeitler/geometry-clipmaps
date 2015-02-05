@@ -1,10 +1,10 @@
 "use strict";
 
 require([
-    "libs/text!shaders/example.vert",
-    "libs/text!shaders/example.frag",
-    "libs/text!shaders/simplex-noise.glsl",
-    "libs/orbit-controls"
+  "libs/text!shaders/example.vert",
+  "libs/text!shaders/example.frag",
+  "libs/text!shaders/simplex-noise.glsl",
+  "libs/orbit-controls"
 ],
 
 function (exampleVert, exampleFrag, simplexNoise) {
@@ -17,7 +17,7 @@ function (exampleVert, exampleFrag, simplexNoise) {
   // Global Consts
   var TERRAIN_WIDTH = 1024, TERRAIN_HEIGHT = 1024;
   var TILE_RES = 32;
-  var LOD_LEVELS = 8;
+  var LOD_LEVELS = 6;
 
   heightTex = THREE.ImageUtils.loadTexture('textures/heightmap-blur.png', {}, function() {
     normalTex = THREE.ImageUtils.loadTexture('textures/normalmap-blur.png', {}, function() {
@@ -38,7 +38,7 @@ function (exampleVert, exampleFrag, simplexNoise) {
     moveAnchor.makeTranslation(0.5, 0.5, 0);
     tileGeometry.applyMatrix(moveAnchor);
 
-    var lMaxScale = TERRAIN_WIDTH / Math.pow(2, LOD_LEVELS);
+    var lMaxScale = TERRAIN_WIDTH/Math.pow(2, LOD_LEVELS);
 
     /**
      * Add middle tiles
@@ -77,34 +77,40 @@ function (exampleVert, exampleFrag, simplexNoise) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x222222, 1);
 
+    // renderer.sortObjects = false;
+    // renderer.autoClear = false;
+
     controls = new THREE.OrbitControls(camera);
     document.body.appendChild(renderer.domElement);
   }
 
   function addTile(x, y, scale) {
-    // var tileUniforms = ;
+    var tileUniforms = {
+      heightmap: {type: "t", value: heightTex},
+      normalmap: {type: "t", value: normalTex},
+      scale: {type: "f", value: scale},
+      offset: {type: "v2", value: new THREE.Vector2(x, y)},
+      midPos: {type: "v2", value: midPos},
+      terrainDims: {type: "v2", value: new THREE.Vector2(TERRAIN_WIDTH, TERRAIN_HEIGHT)},
+      tileRes: {type: "f", value: TILE_RES}
+    };
 
     var tileMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        heightmap: {type: "t", value: heightTex},
-        normalmap: {type: "t", value: normalTex},
-        scale: {type: "f", value: scale},
-        offset: {type: "v2", value: new THREE.Vector2(x, y)},
-        midPos: {type: "v2", value: midPos},
-        terrainDims: {type: "v2", value: new THREE.Vector2(TERRAIN_WIDTH, TERRAIN_HEIGHT)},
-        tileRes: {type: "f", value: TILE_RES}
-      },
+      uniforms: tileUniforms,
       vertexShader: exampleVert,
       fragmentShader: exampleFrag
     });
 
-    // tileMaterial.wireframe = true;
-    // tileMaterial.wireframeLinewidth = 1.0;
+    tileMaterial.wireframe = true;
+    tileMaterial.wireframeLinewidth = 1.0;
 
     var tile = new THREE.Mesh(
       tileGeometry,
       tileMaterial
     );
+
+    // Draw tile even if translated outside viewport
+    tile.frustumCulled = false;
     scene.add(tile);
   }
 
@@ -122,7 +128,9 @@ function (exampleVert, exampleFrag, simplexNoise) {
     // midPos = new THREE.Vector2(xyIntersection.x, xyIntersection.y);
     // console.log(xyIntersection);
 
-    midPos = new THREE.Vector2(camera.position.x, camera.position.y);
+    var newMidPos = new THREE.Vector2(camera.position.x, camera.position.y);
+    var midPosDiff = newMidPos.clone().sub(midPos);
+    midPos = newMidPos;
 
     for (var c in scene.children) {
       var tile = scene.children[c];
