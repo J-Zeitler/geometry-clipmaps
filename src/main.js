@@ -16,16 +16,17 @@ function (exampleVert, exampleFrag, simplexNoise) {
 
   // Global Consts
   var TERRAIN_WIDTH = 1024, TERRAIN_HEIGHT = 1024;
-  var TILE_RES = 8;
+  var TILE_RES = 16;
   var LOD_LEVELS = 6;
 
-  // var MORPH = {
-  //   NONE: 0,
-  //   TOP: 1,
-  //   LEFT: 2,
-  //   BOTTOM: 4,
-  //   RIGHT: 8
-  // };
+  var MORPH = {
+    NONE: new THREE.Vector2(0, 0),
+
+    TOP: new THREE.Vector2(0, 1),
+    RIGHT: new THREE.Vector2(1, 0),
+    BOTTOM: new THREE.Vector2(0, -1),
+    LEFT: new THREE.Vector2(-1, 0)
+  };
 
   heightTex = THREE.ImageUtils.loadTexture('textures/heightmap-blur.png', {}, function() {
     normalTex = THREE.ImageUtils.loadTexture('textures/normalmap-blur.png', {}, function() {
@@ -46,39 +47,50 @@ function (exampleVert, exampleFrag, simplexNoise) {
     moveAnchor.makeTranslation(0.5, 0.5, 0);
     tileGeometry.applyMatrix(moveAnchor);
 
-    var lMaxScale = TERRAIN_WIDTH/Math.pow(2, LOD_LEVELS);
+    var lodMaxScale = TERRAIN_WIDTH/Math.pow(2, LOD_LEVELS);
 
     /**
-     * Add middle tiles
+     * Add center tiles
      */
-    addTile(0, 0, lMaxScale);
-    addTile(0, -lMaxScale, lMaxScale);
-    addTile(-lMaxScale, -lMaxScale, lMaxScale);
-    addTile(-lMaxScale, 0, lMaxScale);
+    addTile(0, 0, lodMaxScale, MORPH.NONE);
+    addTile(0, -lodMaxScale, lodMaxScale, MORPH.NONE);
+    addTile(-lodMaxScale, -lodMaxScale, lodMaxScale, MORPH.NONE);
+    addTile(-lodMaxScale, 0, lodMaxScale, MORPH.NONE);
 
     /**
      * Add clipmap "shells"
+     *          -->
+     *    +---+---+---+---+
+     *    | L | T | T | T |
+     *    +---+---+---+---+
+     *    | L |   |   | R | |
+     *  ^ +---+---+---+---+ v
+     *  | | L |   |   | R |
+     *    +---+---+---+---+
+     *    | B | B | B | R |
+     *    +---+---+---+---+
+     *            <--
      */
-    for (var scale = lMaxScale; scale < TERRAIN_WIDTH; scale *= 2) {
-      // top
-      addTile(0, scale, scale);
-      addTile(scale, scale, scale);
-      addTile(-scale, scale, scale);
+    for (var scale = lodMaxScale; scale < TERRAIN_WIDTH; scale *= 2) {
+      // T
+      addTile(-scale, scale, scale, MORPH.TOP);
+      addTile(0, scale, scale, MORPH.TOP);
+      addTile(scale, scale, scale, MORPH.TOP.clone().add(MORPH.RIGHT));
 
-      // right
-      addTile(scale, 0, scale);
-      addTile(scale, -scale, scale);
-      addTile(scale, -2*scale, scale);
+      // R
+      addTile(scale, 0, scale, MORPH.RIGHT);
+      addTile(scale, -scale, scale, MORPH.RIGHT);
+      addTile(scale, -2*scale, scale, MORPH.RIGHT.clone().add(MORPH.BOTTOM));
 
-      // bottom
-      addTile(0, -2*scale, scale);
-      addTile(-scale, -2*scale, scale);
-      addTile(-2*scale, -2*scale, scale);
+      // B
+      addTile(0, -2*scale, scale, MORPH.BOTTOM);
+      addTile(-scale, -2*scale, scale, MORPH.BOTTOM);
+      addTile(-2*scale, -2*scale, scale, MORPH.BOTTOM.clone().add(MORPH.LEFT));
 
-      // left
-      addTile(-2*scale, scale, scale);
-      addTile(-2*scale, 0, scale);
-      addTile(-2*scale, -scale, scale);
+      // L
+      addTile(-2*scale, -scale, scale, MORPH.LEFT);
+      addTile(-2*scale, 0, scale, MORPH.LEFT);
+      addTile(-2*scale, scale, scale, MORPH.LEFT.clone().add(MORPH.TOP));
     }
 
     renderer = new THREE.WebGLRenderer();
@@ -92,7 +104,7 @@ function (exampleVert, exampleFrag, simplexNoise) {
     document.body.appendChild(renderer.domElement);
   }
 
-  function addTile(x, y, scale) {
+  function addTile(x, y, scale, morph) {
     var tileUniforms = {
       heightmap: {type: "t", value: heightTex},
       normalmap: {type: "t", value: normalTex},
@@ -101,6 +113,7 @@ function (exampleVert, exampleFrag, simplexNoise) {
       midPos: {type: "v2", value: midPos},
       terrainDims: {type: "v2", value: new THREE.Vector2(TERRAIN_WIDTH, TERRAIN_HEIGHT)},
       tileRes: {type: "f", value: TILE_RES},
+      morph: {type: "v2", value: morph},
       morphFactor: {type: "f", value: 0.5}
     };
 
@@ -110,8 +123,8 @@ function (exampleVert, exampleFrag, simplexNoise) {
       fragmentShader: exampleFrag
     });
 
-    // tileMaterial.wireframe = true;
-    // tileMaterial.wireframeLinewidth = 1.0;
+    tileMaterial.wireframe = true;
+    tileMaterial.wireframeLinewidth = 1.0;
 
     var tile = new THREE.Mesh(
       tileGeometry,
