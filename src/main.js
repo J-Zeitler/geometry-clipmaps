@@ -16,8 +16,16 @@ function (exampleVert, exampleFrag, simplexNoise) {
 
   // Global Consts
   var TERRAIN_WIDTH = 1024, TERRAIN_HEIGHT = 1024;
-  var TILE_RES = 32;
+  var TILE_RES = 8;
   var LOD_LEVELS = 6;
+
+  // var MORPH = {
+  //   NONE: 0,
+  //   TOP: 1,
+  //   LEFT: 2,
+  //   BOTTOM: 4,
+  //   RIGHT: 8
+  // };
 
   heightTex = THREE.ImageUtils.loadTexture('textures/heightmap-blur.png', {}, function() {
     normalTex = THREE.ImageUtils.loadTexture('textures/normalmap-blur.png', {}, function() {
@@ -92,7 +100,8 @@ function (exampleVert, exampleFrag, simplexNoise) {
       offset: {type: "v2", value: new THREE.Vector2(x, y)},
       midPos: {type: "v2", value: midPos},
       terrainDims: {type: "v2", value: new THREE.Vector2(TERRAIN_WIDTH, TERRAIN_HEIGHT)},
-      tileRes: {type: "f", value: TILE_RES}
+      tileRes: {type: "f", value: TILE_RES},
+      morphFactor: {type: "f", value: 0.5}
     };
 
     var tileMaterial = new THREE.ShaderMaterial({
@@ -101,8 +110,8 @@ function (exampleVert, exampleFrag, simplexNoise) {
       fragmentShader: exampleFrag
     });
 
-    tileMaterial.wireframe = true;
-    tileMaterial.wireframeLinewidth = 1.0;
+    // tileMaterial.wireframe = true;
+    // tileMaterial.wireframeLinewidth = 1.0;
 
     var tile = new THREE.Mesh(
       tileGeometry,
